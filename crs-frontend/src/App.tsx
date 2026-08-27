@@ -1,30 +1,33 @@
-import { useEffect, useState } from 'react'
-import { getCourses } from './api/courseApi'
-import type { Course } from './types/course'
+import { useCallback, useState } from 'react'
+import { useCourses } from './api/useCourses'
+import CourseList from './components/CourseList'
+import Pagination from './components/Pagination'
+import SearchBox from './components/SearchBox'
 import './App.css'
 
 function App() {
-  const [courses, setCourses] = useState<Course[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [keyword, setKeyword] = useState('')
+  const [page, setPage] = useState(0)
+  const { courses, totalPages, state, errorMessage, refetch } = useCourses(keyword, page)
 
-  useEffect(() => {
-    getCourses()
-      .then((response) => setCourses(response.data.content))
-      .catch((requestError: unknown) => {
-        console.error(requestError)
-        setError('Khong ket noi duoc toi he thong. Kiem tra lai api gateway da chay chua.')
-      })
-      .finally(() => setLoading(false))
+  const handleSearch = useCallback((newKeyword: string) => {
+    setKeyword(newKeyword)
+    setPage(0)
   }, [])
 
   return (
-    <div className="connection-check" aria-live="polite">
-      <h1>Kiem tra ket noi CRS qua Gateway</h1>
-      {loading && <p>Dang tai du lieu...</p>}
-      {error && <p className="error">{error}</p>}
-      {!loading && !error && <pre>{JSON.stringify(courses, null, 2)}</pre>}
-    </div>
+    <main className="course-page">
+      <header className="page-header">
+        <p className="eyebrow">CRS / COURSE CATALOG</p>
+        <h1>Danh sach mon hoc</h1>
+        <p className="subtitle">Tra cuu hoc phan va so cho dang con trong he thong.</p>
+      </header>
+      <SearchBox onSearch={handleSearch} />
+      <section className="course-section" aria-live="polite">
+        <CourseList courses={courses} state={state} errorMessage={errorMessage} onRetry={refetch} />
+        <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+      </section>
+    </main>
   )
 }
 

@@ -6,6 +6,7 @@ import vn.edu.crs.auth_service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,12 @@ public class DataSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${seed.admin-password}")
+    private String adminPassword;
+
+    @Value("${seed.student-password}")
+    private String studentPassword;
+
     @Override
     public void run(String... args) {
 
@@ -25,7 +32,7 @@ public class DataSeeder implements CommandLineRunner {
 
             admin.setUsername("admin");
             admin.setPassword(
-                    passwordEncoder.encode("admin123")
+                    passwordEncoder.encode(adminPassword)
             );
             admin.setRole("ADMIN");
 
@@ -38,7 +45,7 @@ public class DataSeeder implements CommandLineRunner {
 
             student.setUsername("student1");
             student.setPassword(
-                    passwordEncoder.encode("student123")
+                    passwordEncoder.encode(studentPassword)
             );
             student.setRole("STUDENT");
 

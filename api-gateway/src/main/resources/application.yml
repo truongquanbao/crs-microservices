@@ -77,10 +77,10 @@ spring:
             allowedHeaders: "*"
 
 jwt:
-  secret: CRS-Microservices-Secret-Key-Nam-3-Hoc-Ky-2026-Doi-Trong-Thuc-Te
+  secret: ${JWT_SECRET:CRS-Microservices-Secret-Key-Nam-3-Hoc-Ky-2026-Doi-Trong-Thuc-Te}
 
 partner:
-  api-key: crs-partner-key-2026
+  api-key: ${PARTNER_API_KEY:crs-partner-key-2026}
 
 management:
   endpoints:

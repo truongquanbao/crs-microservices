@@ -1,0 +1,20 @@
+# IDE and editor files
+.idea/
+.vscode/
+
+# Java and Maven build output
+**/target/
+**/*.class
+
+# Frontend dependencies and build output
+**/node_modules/
+**/dist/
+
+# Logs and OS files
+*.log
+.DS_Store
+
+# Environment files and local overrides
+.env
+.env.*
+!.env.example
