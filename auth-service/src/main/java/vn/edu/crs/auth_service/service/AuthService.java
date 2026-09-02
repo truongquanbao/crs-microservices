@@ -41,13 +41,15 @@ public class AuthService {
 
         String token = jwtUtil.generateToken(
                 user.getUsername(),
-                user.getRole()
+                user.getRole(),
+                user.getId()
         );
 
         return new LoginResponseDTO(
                 token,
                 user.getUsername(),
-                user.getRole()
+                user.getRole(),
+                user.getId()
         );
     }
 }
