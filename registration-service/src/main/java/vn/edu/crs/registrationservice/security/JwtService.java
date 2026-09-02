@@ -44,6 +44,8 @@ public class JwtService {
         try {
             Claims claims = extractAllClaims(token);
             return claims.getSubject() != null
+                    && claims.get("role") != null
+                    && claims.get("userId") != null
                     && claims.getExpiration() != null
                     && !claims.getExpiration().before(new java.util.Date());
         } catch (Exception ex) {

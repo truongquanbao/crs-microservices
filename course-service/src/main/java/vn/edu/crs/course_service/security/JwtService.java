@@ -28,10 +28,22 @@ public class JwtService {
         return role == null ? null : role.toString();
     }
 
+    public Long extractUserId(String token) {
+        Object userId = extractAllClaims(token).get("userId");
+        if (userId == null) {
+            throw new IllegalArgumentException("JWT missing userId claim");
+        }
+        return Long.valueOf(userId.toString());
+    }
+
     public boolean isTokenValid(String token) {
         try {
             Claims claims = extractAllClaims(token);
-            return claims.getSubject() != null && claims.getExpiration() != null && !claims.getExpiration().before(new java.util.Date());
+            return claims.getSubject() != null
+                    && claims.get("role") != null
+                    && claims.get("userId") != null
+                    && claims.getExpiration() != null
+                    && !claims.getExpiration().before(new java.util.Date());
         } catch (Exception ex) {
             return false;
         }

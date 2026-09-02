@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 
 interface ToastState {
   message: string
@@ -8,17 +8,11 @@ interface ToastState {
 export const useToast = () => {
   const [toast, setToast] = useState<ToastState | null>(null)
 
-  const showToast = (message: string, type: 'success' | 'error') => {
+  const showToast = useCallback((message: string, type: 'success' | 'error') => {
     setToast({ message, type })
-    const timer = setTimeout(() => {
-      setToast(null)
-    }, 3000)
-    return () => clearTimeout(timer)
-  }
+  }, [])
 
-  const clearToast = () => {
-    setToast(null)
-  }
+  const clearToast = useCallback(() => setToast(null), [])
 
   return { toast, showToast, clearToast }
 }

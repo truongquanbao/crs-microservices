@@ -4,15 +4,25 @@ import { useCourses } from '../api/useCourses'
 import { registerCourse } from '../api/registrationApi'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../hooks/useToast'
+import SearchBox from '../components/SearchBox'
+import CourseList from '../components/CourseList'
+import Pagination from '../components/Pagination'
 import Toast from '../components/Toast'
 import type { Course } from '../types/course'
 import type { ApiErrorResponse } from '../types/apiError'
 
 export default function RegisterCoursePage() {
+  const [keyword, setKeyword] = useState('')
+  const [page, setPage] = useState(0)
   const { user } = useAuth()
-  const { courses, state, errorMessage, refetch } = useCourses('', 0)
+  const { courses, totalPages, state, errorMessage, refetch } = useCourses(keyword, page)
   const { toast, showToast, clearToast } = useToast()
   const [registeringId, setRegisteringId] = useState<number | null>(null)
+
+  const handleSearch = useCallback((newKeyword: string) => {
+    setKeyword(newKeyword)
+    setPage(0)
+  }, [])
 
   const handleRegister = useCallback(
     async (course: Course) => {
@@ -36,51 +46,24 @@ export default function RegisterCoursePage() {
         setRegisteringId(null)
       }
     },
-    [user?.userId, showToast, refetch],
+    [user, showToast, refetch],
   )
 
   return (
     <main style={{ padding: 24, maxWidth: 800, margin: '0 auto' }}>
       <h1>Dang ky hoc phan</h1>
-      {state === 'loading' && <p>Dang tai danh sach mon hoc...</p>}
-      {state === 'error' && (
-        <div style={{ color: '#b91c1c' }}>
-          <p>{errorMessage}</p>
-          <button onClick={refetch}>Thu lai</button>
-        </div>
-      )}
-      {state === 'empty' && <p>Khong co mon hoc nao co san.</p>}
-      {state === 'success' && (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ textAlign: 'left', borderBottom: '2px solid #333' }}>
-              <th>Ten mon hoc</th>
-              <th>So tin chi</th>
-              <th>So cho con lai</th>
-              <th>Thao tac</th>
-            </tr>
-          </thead>
-          <tbody>
-            {courses.map((course) => (
-              <tr key={course.id} style={{ borderBottom: '1px solid #eee' }}>
-                <td>{course.tenMonHoc}</td>
-                <td>{course.soTinChi}</td>
-                <td style={{ color: course.soChoConLai === 0 ? '#b91c1c' : 'inherit' }}>
-                  {course.soChoConLai} / {course.soChoToiDa}
-                </td>
-                <td>
-                  <button
-                    onClick={() => handleRegister(course)}
-                    disabled={course.soChoConLai === 0 || registeringId === course.id}
-                  >
-                    {course.soChoConLai === 0 ? 'Het cho' : registeringId === course.id ? 'Dang ky...' : 'Dang ky'}
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      <SearchBox onSearch={handleSearch} />
+      <div style={{ marginTop: 16 }}>
+        <CourseList
+          courses={courses}
+          state={state}
+          errorMessage={errorMessage}
+          onRetry={refetch}
+          onRegister={handleRegister}
+          registeringId={registeringId}
+        />
+      </div>
+      <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
       {toast && <Toast message={toast.message} type={toast.type} onClose={clearToast} />}
     </main>
   )

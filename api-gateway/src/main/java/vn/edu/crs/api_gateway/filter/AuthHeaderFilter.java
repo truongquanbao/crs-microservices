@@ -60,7 +60,7 @@ public class AuthHeaderFilter implements GlobalFilter, Ordered {
                     .parseClaimsJws(token)
                     .getBody();
 
-            if (claims.getSubject() == null || claims.get("role") == null) {
+            if (claims.getSubject() == null || claims.get("role") == null || claims.get("userId") == null) {
                 throw new IllegalArgumentException("Invalid JWT claims");
             }
         } catch (Exception ex) {

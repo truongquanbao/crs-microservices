@@ -1,7 +1,7 @@
 import axiosClient from './axiosClient'
-import type { Registration } from '../types/registration'
+import type { Registration, RegistrationRequest } from '../types/registration'
 
-export const registerCourse = (payload: { studentId: number; courseId: number }) => {
+export const registerCourse = (payload: RegistrationRequest) => {
   return axiosClient.post<Registration>('/api/registrations', payload)
 }
 

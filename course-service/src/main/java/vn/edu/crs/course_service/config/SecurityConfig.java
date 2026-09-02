@@ -27,6 +27,7 @@ public class SecurityConfig {
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.GET, "/courses", "/courses/**").permitAll()
+                .requestMatchers(HttpMethod.PATCH, "/internal/courses/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/courses/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/courses/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/courses/**").hasRole("ADMIN")

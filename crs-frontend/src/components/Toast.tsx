@@ -8,7 +8,7 @@ interface ToastProps {
 
 export default function Toast({ message, type, onClose }: ToastProps) {
   useEffect(() => {
-    const timer = setTimeout(onClose, 3000)
+    const timer = setTimeout(onClose, 3500)
     return () => clearTimeout(timer)
   }, [onClose])
 
@@ -16,16 +16,26 @@ export default function Toast({ message, type, onClose }: ToastProps) {
     <div
       style={{
         position: 'fixed',
-        top: 16,
-        right: 16,
-        padding: '12px 16px',
-        borderRadius: 4,
-        backgroundColor: type === 'success' ? '#10b981' : '#ef4444',
-        color: 'white',
-        zIndex: 9999,
+        bottom: 24,
+        right: 24,
+        padding: '12px 20px',
+        borderRadius: 8,
+        color: '#fff',
+        backgroundColor: type === 'success' ? '#15803d' : '#b91c1c',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+        zIndex: 1000,
       }}
+      role={type === 'error' ? 'alert' : 'status'}
     >
       {message}
+      <button
+        type="button"
+        aria-label="Dong thong bao"
+        onClick={onClose}
+        style={{ marginLeft: 12, background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}
+      >
+        x
+      </button>
     </div>
   )
 }
