@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import type { LoginResponse } from '../types/auth'
 
 interface AuthUser {
+  userId: number
   username: string
   role: 'ADMIN' | 'STUDENT'
 }
@@ -32,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = (data: LoginResponse) => {
     localStorage.setItem(TOKEN_KEY, data.token)
     const authUser: AuthUser = {
+      userId: data.userId,
       username: data.username,
       role: data.role,
     }

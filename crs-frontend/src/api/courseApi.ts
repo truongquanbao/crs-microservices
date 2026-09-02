@@ -8,6 +8,10 @@ export const getCourses = (keyword?: string, page = 0, size = 10, signal?: Abort
   })
 }
 
+export const getCourseById = (id: number) => {
+  return axiosClient.get<Course>(`/api/courses/${id}`)
+}
+
 const toPayload = (values: CourseFormValues) => ({
   tenMonHoc: values.tenMonHoc.trim(),
   soTinChi: Number(values.soTinChi),
