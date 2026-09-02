@@ -6,9 +6,11 @@ import vn.edu.crs.registrationservice.entity.Registration;
 import vn.edu.crs.registrationservice.repository.RegistrationRepository;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
@@ -20,6 +22,10 @@ public class RegistrationService {
 
     private final RegistrationRepository registrationRepository;
     private final CourseClient courseClient;
+
+    public List<Registration> getByStudentId(Long studentId) {
+        return registrationRepository.findByStudentId(studentId);
+    }
 
     public Registration register(RegistrationRequestDTO dto) {
 
@@ -33,13 +39,8 @@ public class RegistrationService {
             );
         }
 
-        // Buoc 1: goi sang course-service de tru cho TRUOC.
-        // Neu buoc nay nem exception, ham se dung lai ngay,
-        // KHONG luu Registration.
         courseClient.reserveSeat(dto.getCourseId());
 
-        // Buoc 2: chi luu Registration SAU KHI course-service
-        // xac nhan thanh cong.
         Registration registration = new Registration();
 
         registration.setStudentId(dto.getStudentId());
@@ -48,14 +49,9 @@ public class RegistrationService {
         registration.setNgayDangKy(LocalDateTime.now());
 
         return registrationRepository.save(registration);
-
-        // LUU Y:
-        // neu dong save() nay that bai, cho da bi tru o course-service
-        // nhung khong co ban ghi Registration nao duoc tao.
-        // Day la gioi han da biet cua kien truc don gian hoa nay.
     }
 
-    public void cancel(Long registrationId) {
+    public void cancel(Long registrationId, Long studentId) {
 
         Registration registration =
                 registrationRepository.findById(registrationId)
@@ -66,6 +62,10 @@ public class RegistrationService {
                                 )
                         );
 
+        if (!registration.getStudentId().equals(studentId)) {
+            throw new AccessDeniedException("Ban chi co the huy dang ky cua minh");
+        }
+
         if (DA_HUY.equals(registration.getTrangThai())) {
 
             throw new IllegalStateException(
@@ -73,8 +73,6 @@ public class RegistrationService {
             );
         }
 
-        // Goi sang course-service de hoan tra cho TRUOC
-        // khi doi trang thai
         courseClient.releaseSeat(registration.getCourseId());
 
         registration.setTrangThai(DA_HUY);
