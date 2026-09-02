@@ -7,4 +7,5 @@ Tài liệu được lập từ source code, cấu hình và Git history hiện 
 - [Lab 03](Lab03.md)
 - [Lab 04](Lab04.md)
 - [Lab 05](Lab05.md)
+- [Lab 06](Lab06.md)
 - [System Files](SYSTEM_FILES.md)
