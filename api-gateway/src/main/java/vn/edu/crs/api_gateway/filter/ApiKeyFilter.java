@@ -1,59 +1,68 @@
 package vn.edu.crs.api_gateway.filter;
 
-import org.springframework.beans.factory.annotation.Value;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
-
 import org.springframework.core.Ordered;
-
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-
 import org.springframework.http.server.reactive.ServerHttpRequest;
-
 import org.springframework.stereotype.Component;
-
 import org.springframework.web.server.ServerWebExchange;
-
 import reactor.core.publisher.Mono;
+import vn.edu.crs.api_gateway.service.ApiKeyValidationCache;
+import vn.edu.crs.api_gateway.service.AuthServiceClient;
 
 @Component
+@RequiredArgsConstructor
 public class ApiKeyFilter implements GlobalFilter, Ordered {
 
-    @Value("${partner.api-key}")
-    private String validApiKey;
+    private final AuthServiceClient authServiceClient;
+    private final ApiKeyValidationCache validationCache;
 
     @Override
     public Mono<Void> filter(
             ServerWebExchange exchange,
             GatewayFilterChain chain) {
-
-        ServerHttpRequest request =
-                exchange.getRequest();
-
-        String path =
-                request.getURI().getPath();
-
-        // Không phải public courses
-        if (!path.startsWith("/api/public/courses")) {
+        ServerHttpRequest request = exchange.getRequest();
+        String path = request.getURI().getPath();
+        if (!("/api/public/courses".equals(path)
+                || path.startsWith("/api/public/courses/"))) {
             return chain.filter(exchange);
         }
-
-        // Lấy API Key
-        String apiKey =
-                request.getHeaders()
-                        .getFirst("X-API-KEY");
-
-        // API Key sai hoặc thiếu
-        if (apiKey == null || !apiKey.equals(validApiKey)) {
-
-            exchange.getResponse()
-                    .setStatusCode(HttpStatus.FORBIDDEN);
-
-            return exchange.getResponse().setComplete();
+        if (request.getMethod() != HttpMethod.GET) {
+            return forbidden(exchange);
         }
 
-        return chain.filter(exchange);
+        String requiredScope = requiredScope(path);
+
+        String apiKey = request.getHeaders().getFirst("X-API-KEY");
+        if (apiKey == null || apiKey.isBlank()) {
+            return forbidden(exchange);
+        }
+
+        Boolean cachedResult = validationCache.get(apiKey, requiredScope);
+        if (cachedResult != null) {
+            return cachedResult ? chain.filter(exchange) : forbidden(exchange);
+        }
+
+        return authServiceClient.validateApiKey(apiKey, requiredScope)
+                .flatMap(valid -> {
+                    validationCache.put(apiKey, requiredScope, valid);
+                    return valid ? chain.filter(exchange) : forbidden(exchange);
+                });
+    }
+
+    private String requiredScope(String path) {
+        if ("/api/public/courses".equals(path)) {
+            return "courses:read";
+        }
+        return "courses:read-detail";
+    }
+
+    private Mono<Void> forbidden(ServerWebExchange exchange) {
+        exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+        return exchange.getResponse().setComplete();
     }
 
     @Override

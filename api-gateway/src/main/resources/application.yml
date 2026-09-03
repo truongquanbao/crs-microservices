@@ -17,6 +17,16 @@ spring:
             - RewritePath=/api/auth/(?<segment>.*), /auth/${segment}
 
         # =========================
+        # API KEY ADMINISTRATION
+        # =========================
+        - id: auth-service-api-keys
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/api-keys,/api/api-keys/**
+          filters:
+            - RewritePath=/api/api-keys(?<segment>/?.*), /api-keys${segment}
+
+        # =========================
         # COURSE SERVICE - LIST
         # =========================
         - id: course-service-list
@@ -66,6 +76,13 @@ spring:
           filters:
             - RewritePath=/api/public/courses, /courses
 
+        - id: course-service-partner-detail
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/public/courses/**
+          filters:
+            - RewritePath=/api/public/courses/(?<segment>.*), /courses/${segment}
+
       # =========================
       # CORS
       # =========================
@@ -79,8 +96,11 @@ spring:
 jwt:
   secret: ${JWT_SECRET:CRS-Microservices-Secret-Key-Nam-3-Hoc-Ky-2026-Doi-Trong-Thuc-Te}
 
-partner:
-  api-key: ${PARTNER_API_KEY:dev-partner-key}
+auth-service:
+  base-url: ${AUTH_SERVICE_URL:http://localhost:8081}
+
+api-key:
+  cache-ttl-seconds: 30
 
 management:
   endpoints:
